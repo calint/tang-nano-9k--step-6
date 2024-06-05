@@ -1,0 +1,564 @@
+$date
+	Wed Jun  5 16:57:29 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module TestBench $end
+$var wire 1 ! data_out_valid $end
+$var wire 32 " data_out [31:0] $end
+$var parameter 32 # clk_tk $end
+$var reg 32 $ address [31:0] $end
+$var reg 1 % clk $end
+$var reg 32 & data_in [31:0] $end
+$var reg 1 ' sys_rst_n $end
+$var reg 4 ( write_enable [3:0] $end
+$var integer 32 ) i [31:0] $end
+$scope module cache $end
+$var wire 32 * address [31:0] $end
+$var wire 1 % clk $end
+$var wire 32 + data_in [31:0] $end
+$var wire 1 ' rst_n $end
+$var wire 4 , write_enable [3:0] $end
+$var wire 1 - line_valid $end
+$var wire 18 . line_tag_in [17:0] $end
+$var wire 32 / line_tag_and_valid_dirty [31:0] $end
+$var wire 18 0 line_tag [17:0] $end
+$var wire 10 1 line_ix [9:0] $end
+$var wire 1 2 line_dirty $end
+$var wire 32 3 data3_out [31:0] $end
+$var wire 32 4 data2_out [31:0] $end
+$var wire 32 5 data1_out [31:0] $end
+$var wire 32 6 data0_out [31:0] $end
+$var wire 2 7 column_ix [1:0] $end
+$var parameter 32 8 COLUMN_IX_BITWIDTH $end
+$var parameter 32 9 LINE_COUNT $end
+$var parameter 36 : LINE_DIRTY_BIT $end
+$var parameter 32 ; LINE_IX_BITWIDTH $end
+$var parameter 35 < LINE_VALID_BIT $end
+$var parameter 35 = TAG_BITWIDTH $end
+$var parameter 32 > ZEROS_BITWIDTH $end
+$var reg 32 ? data_out [31:0] $end
+$var reg 1 ! data_out_valid $end
+$var reg 4 @ write_enable_0 [3:0] $end
+$var reg 4 A write_enable_1 [3:0] $end
+$var reg 4 B write_enable_2 [3:0] $end
+$var reg 4 C write_enable_3 [3:0] $end
+$var reg 4 D write_enable_tag [3:0] $end
+$scope module data0 $end
+$var wire 10 E address [9:0] $end
+$var wire 1 % clk $end
+$var wire 32 F data_in [31:0] $end
+$var wire 32 G data_out [31:0] $end
+$var wire 4 H write_enable [3:0] $end
+$var parameter 32 I ADDRESS_BITWIDTH $end
+$var parameter 32 J COLUMN_BITWIDTH $end
+$var parameter 32 K COLUMN_COUNT $end
+$var parameter 32 L DATA_BITWIDTH $end
+$var parameter 0 M DATA_FILE $end
+$var integer 32 N i [31:0] $end
+$upscope $end
+$scope module data1 $end
+$var wire 10 O address [9:0] $end
+$var wire 1 % clk $end
+$var wire 32 P data_in [31:0] $end
+$var wire 32 Q data_out [31:0] $end
+$var wire 4 R write_enable [3:0] $end
+$var parameter 32 S ADDRESS_BITWIDTH $end
+$var parameter 32 T COLUMN_BITWIDTH $end
+$var parameter 32 U COLUMN_COUNT $end
+$var parameter 32 V DATA_BITWIDTH $end
+$var parameter 0 W DATA_FILE $end
+$var integer 32 X i [31:0] $end
+$upscope $end
+$scope module data2 $end
+$var wire 10 Y address [9:0] $end
+$var wire 1 % clk $end
+$var wire 32 Z data_in [31:0] $end
+$var wire 32 [ data_out [31:0] $end
+$var wire 4 \ write_enable [3:0] $end
+$var parameter 32 ] ADDRESS_BITWIDTH $end
+$var parameter 32 ^ COLUMN_BITWIDTH $end
+$var parameter 32 _ COLUMN_COUNT $end
+$var parameter 32 ` DATA_BITWIDTH $end
+$var parameter 0 a DATA_FILE $end
+$var integer 32 b i [31:0] $end
+$upscope $end
+$scope module data3 $end
+$var wire 10 c address [9:0] $end
+$var wire 1 % clk $end
+$var wire 32 d data_in [31:0] $end
+$var wire 32 e data_out [31:0] $end
+$var wire 4 f write_enable [3:0] $end
+$var parameter 32 g ADDRESS_BITWIDTH $end
+$var parameter 32 h COLUMN_BITWIDTH $end
+$var parameter 32 i COLUMN_COUNT $end
+$var parameter 32 j DATA_BITWIDTH $end
+$var parameter 0 k DATA_FILE $end
+$var integer 32 l i [31:0] $end
+$upscope $end
+$scope module tag $end
+$var wire 10 m address [9:0] $end
+$var wire 1 % clk $end
+$var wire 32 n data_in [31:0] $end
+$var wire 32 o data_out [31:0] $end
+$var wire 4 p write_enable [3:0] $end
+$var parameter 32 q ADDRESS_BITWIDTH $end
+$var parameter 32 r COLUMN_BITWIDTH $end
+$var parameter 32 s COLUMN_COUNT $end
+$var parameter 32 t DATA_BITWIDTH $end
+$var parameter 0 u DATA_FILE $end
+$var integer 32 v i [31:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b u
+b100000 t
+b100 s
+b1000 r
+b1010 q
+b k
+b100000 j
+b100 i
+b1000 h
+b1010 g
+b a
+b100000 `
+b100 _
+b1000 ^
+b1010 ]
+b W
+b100000 V
+b100 U
+b1000 T
+b1010 S
+b M
+b100000 L
+b100 K
+b1000 J
+b1010 I
+b10 >
+b10010 =
+b10010 <
+b1010 ;
+b10011 :
+b10000000000 9
+b10 8
+b100 #
+$end
+#0
+$dumpvars
+b100 v
+bx p
+bx o
+b1xxxxxxxxxxxxxxxxxx n
+bx m
+b100 l
+bx f
+bx e
+bx d
+bx c
+b100 b
+bx \
+bx [
+bx Z
+bx Y
+b100 X
+bx R
+bx Q
+bx P
+bx O
+b100 N
+bx H
+bx G
+bx F
+bx E
+bx D
+bx C
+bx B
+bx A
+bx @
+bx ?
+bx 7
+bx 6
+bx 5
+bx 4
+bx 3
+x2
+bx 1
+bx 0
+bx /
+bx .
+x-
+bx ,
+bx +
+bx *
+b10000000000 )
+bx (
+0'
+bx &
+1%
+bx $
+bx "
+x!
+$end
+#2000
+0%
+#4000
+0!
+b0 0
+02
+0-
+b0 C
+b0 f
+b0 B
+b0 \
+b1111 A
+b1111 R
+b0 @
+b0 H
+b1111 D
+b1111 p
+b11111111111111111111111111111111 "
+b11111111111111111111111111111111 ?
+b1 7
+b11111111111111111111111111111111 6
+b11111111111111111111111111111111 G
+b11111111111111111111111111111111 5
+b11111111111111111111111111111111 Q
+b11111111111111111111111111111111 4
+b11111111111111111111111111111111 [
+b11111111111111111111111111111111 3
+b11111111111111111111111111111111 e
+b0 /
+b0 o
+b0 1
+b0 E
+b0 O
+b0 Y
+b0 c
+b0 m
+b1000000000000000000 n
+b0 .
+b1111 (
+b1111 ,
+b10101011110011011110111100010010 &
+b10101011110011011110111100010010 +
+b10101011110011011110111100010010 F
+b10101011110011011110111100010010 P
+b10101011110011011110111100010010 Z
+b10101011110011011110111100010010 d
+b100 $
+b100 *
+1'
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#6000
+0%
+#8000
+1!
+1-
+b1111 B
+b1111 \
+b0 A
+b0 R
+b1111 D
+b1111 p
+b10 7
+b1000000000000000000 /
+b1000000000000000000 o
+b10101011110011011110111100010010 5
+b10101011110011011110111100010010 Q
+b10101011110011010001001000110100 &
+b10101011110011010001001000110100 +
+b10101011110011010001001000110100 F
+b10101011110011010001001000110100 P
+b10101011110011010001001000110100 Z
+b10101011110011010001001000110100 d
+b1000 $
+b1000 *
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#10000
+0%
+#12000
+b0 B
+b0 \
+b0 D
+b0 p
+b10101011110011011110111100010010 "
+b10101011110011011110111100010010 ?
+b1 7
+b10101011110011010001001000110100 4
+b10101011110011010001001000110100 [
+b0 (
+b0 ,
+b100 $
+b100 *
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#14000
+0%
+#16000
+b10101011110011010001001000110100 "
+b10101011110011010001001000110100 ?
+b10 7
+b1000 $
+b1000 *
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#18000
+0%
+#20000
+0!
+b11111111111111111111111111111111 "
+b11111111111111111111111111111111 ?
+0-
+b0 7
+b11111111111111111111111111111111 5
+b11111111111111111111111111111111 Q
+b11111111111111111111111111111111 4
+b11111111111111111111111111111111 [
+b0 /
+b0 o
+b1 1
+b1 E
+b1 O
+b1 Y
+b1 c
+b1 m
+b10000 $
+b10000 *
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#22000
+0%
+#24000
+b1 7
+b10100 $
+b10100 *
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#26000
+0%
+#28000
+1!
+b10101011110011010001001000110100 "
+b10101011110011010001001000110100 ?
+1-
+b10 7
+b10101011110011011110111100010010 5
+b10101011110011011110111100010010 Q
+b10101011110011010001001000110100 4
+b10101011110011010001001000110100 [
+b1000000000000000000 /
+b1000000000000000000 o
+b0 1
+b0 E
+b0 O
+b0 Y
+b0 c
+b0 m
+b1000 $
+b1000 *
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#30000
+0%
+#32000
+b1 B
+b1 \
+b1111 D
+b1111 p
+b1 (
+b1 ,
+b10101011 &
+b10101011 +
+b10101011 F
+b10101011 P
+b10101011 Z
+b10101011 d
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#34000
+0%
+#36000
+b0 B
+b0 \
+b0 D
+b0 p
+b10101011110011010001001010101011 "
+b10101011110011010001001010101011 ?
+b10101011110011010001001010101011 4
+b10101011110011010001001010101011 [
+b0 (
+b0 ,
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#38000
+0%
+#40000
+b11 B
+b11 \
+b1111 D
+b1111 p
+b11 (
+b11 ,
+b1000011101100101 &
+b1000011101100101 +
+b1000011101100101 F
+b1000011101100101 P
+b1000011101100101 Z
+b1000011101100101 d
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#42000
+0%
+#44000
+b0 B
+b0 \
+b0 D
+b0 p
+b10101011110011011000011101100101 "
+b10101011110011011000011101100101 ?
+b10101011110011011000011101100101 4
+b10101011110011011000011101100101 [
+b0 (
+b0 ,
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#46000
+0%
+#48000
+b1100 B
+b1100 \
+b1111 D
+b1111 p
+b1100 (
+b1100 ,
+b11111110111011110000000000000000 &
+b11111110111011110000000000000000 +
+b11111110111011110000000000000000 F
+b11111110111011110000000000000000 P
+b11111110111011110000000000000000 Z
+b11111110111011110000000000000000 d
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#50000
+0%
+#52000
+b0 B
+b0 \
+b0 D
+b0 p
+b11111110111011111000011101100101 "
+b11111110111011111000011101100101 ?
+b11111110111011111000011101100101 4
+b11111110111011111000011101100101 [
+b0 (
+b0 ,
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#54000
+0%
+#56000
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#58000
+0%
+#60000
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#62000
+0%
+#64000
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%
+#66000
+0%
+#68000
+b100 l
+b100 b
+b100 X
+b100 N
+b100 v
+1%
+#70000
+0%
+#72000
+b100 v
+b100 N
+b100 X
+b100 b
+b100 l
+1%

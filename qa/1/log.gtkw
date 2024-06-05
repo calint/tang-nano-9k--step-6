@@ -1,0 +1,55 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Wed Jun  5 14:46:11 2024
+[*]
+[dumpfile] "/home/c/w/tang-nano-9k--step-6/qa/1/log.vcd"
+[dumpfile_mtime] "Wed Jun  5 14:43:23 2024"
+[dumpfile_size] 5821
+[savefile] "/home/c/w/tang-nano-9k--step-6/qa/1/log.gtkw"
+[timestart] 0
+[size] 1910 1024
+[pos] -1 -1
+*-12.766466 4590 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TestBench.
+[treeopen] TestBench.cache.
+[sst_width] 269
+[signals_width] 352
+[sst_expanded] 1
+[sst_vpaned_height] 304
+@28
+TestBench.sys_rst_n
+TestBench.clk
+@22
+TestBench.address[31:0]
+TestBench.data_in[31:0]
+TestBench.data_out[31:0]
+@28
+TestBench.data_out_valid
+@200
+-cache
+@24
+TestBench.cache.line_tag_in[17:0]
+TestBench.cache.line_ix[9:0]
+@22
+TestBench.cache.data_in[31:0]
+@24
+TestBench.cache.column_ix[1:0]
+@22
+TestBench.cache.data0_out[31:0]
+TestBench.cache.data1_out[31:0]
+TestBench.cache.data2_out[31:0]
+TestBench.cache.data3_out[31:0]
+TestBench.cache.data_out[31:0]
+@28
+TestBench.cache.data_out_valid
+TestBench.cache.line_valid
+@22
+TestBench.cache.line_tag_and_valid_dirty[31:0]
+TestBench.cache.write_enable[3:0]
+TestBench.cache.write_enable_0[3:0]
+TestBench.cache.write_enable_1[3:0]
+TestBench.cache.write_enable_2[3:0]
+@23
+TestBench.cache.write_enable_3[3:0]
+[pattern_trace] 1
+[pattern_trace] 0
