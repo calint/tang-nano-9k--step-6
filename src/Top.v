@@ -1,13 +1,14 @@
 `default_nettype none
 
 module Top (
-    input wire sys_clk,
+    input wire sys_clk,  // 27 MHz
     input wire sys_rst_n,
     output reg [5:0] led,
     input wire uart_rx,
     output wire uart_tx,
     input wire btn1
 );
+
   assign uart_tx = uart_rx;
 
   Cache #(
