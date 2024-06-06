@@ -30,7 +30,7 @@ module TestBench;
   wire br_busy;
 
   Cache #(
-      .LINE_IX_BITWIDTH(10),
+      .LINE_IX_BITWIDTH(1),
       .BURST_RAM_DEPTH_BITWIDTH(BURST_RAM_DEPTH_BITWIDTH)
   ) cache (
       .clk(clk),
@@ -40,6 +40,7 @@ module TestBench;
       .data_out_ready(data_out_ready),
       .data_in(data_in),
       .write_enable(write_enable),
+      .busy(busy),
 
       // burst ram wiring; prefix 'br_'
       .br_cmd(br_cmd),
@@ -56,6 +57,7 @@ module TestBench;
   wire data_out_ready;
   reg [31:0] data_in;
   reg [3:0] write_enable;
+  wire busy;
 
   reg clk = 1;
   reg sys_rst_n = 0;
@@ -200,6 +202,25 @@ module TestBench;
 
     if (data_out == 32'hfeef8765 && data_out_ready) $display("Test 9 passed");
     else $display("Test 9 FAILED");
+
+    // cache miss, evict then write
+    address <= 64;
+    data_in <= 32'habcdef12;
+    write_enable <= 4'b1111;
+    #clk_tk;
+    #clk_tk;
+
+    while (busy) #clk_tk;
+
+    // read it back
+    address <= 64;
+    write_enable <= 0;
+    #clk_tk;
+
+    while (busy) #clk_tk;
+
+    if (data_out == 32'habcdef12 && data_out_ready) $display("Test 10 passed");
+    else $display("Test 10 FAILED");
 
     #clk_tk;
     #clk_tk;

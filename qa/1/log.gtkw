@@ -1,86 +1,36 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Thu Jun  6 17:17:53 2024
+[*] Thu Jun  6 21:57:47 2024
 [*]
 [dumpfile] "/home/c/w/tang-nano-9k--step-6/qa/1/log.vcd"
-[dumpfile_mtime] "Thu Jun  6 17:17:00 2024"
-[dumpfile_size] 16126
+[dumpfile_mtime] "Thu Jun  6 21:55:11 2024"
+[dumpfile_size] 32222
 [savefile] "/home/c/w/tang-nano-9k--step-6/qa/1/log.gtkw"
 [timestart] 0
 [size] 1910 1024
 [pos] -1 -1
-*-14.739625 112000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.467734 292000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TestBench.
 [treeopen] TestBench.cache.
 [sst_width] 269
-[signals_width] 352
+[signals_width] 238
 [sst_expanded] 1
 [sst_vpaned_height] 304
 @28
 TestBench.sys_rst_n
 TestBench.clk
 @22
-TestBench.address[31:0]
-TestBench.data_in[31:0]
-TestBench.data_out[31:0]
-@200
--cache
-@28
-TestBench.cache.cache_line_hit
-@22
-TestBench.cache.line_tag[16:0]
-TestBench.cache.line_tag_in[16:0]
-@24
-TestBench.cache.line_ix[9:0]
-@22
-TestBench.cache.data_in[31:0]
-TestBench.cache.data0_out[31:0]
-TestBench.cache.data1_out[31:0]
-TestBench.cache.data2_out[31:0]
-TestBench.cache.data3_out[31:0]
 TestBench.cache.data_out[31:0]
 @28
-TestBench.cache.line_valid
-@22
-TestBench.cache.line_tag_and_valid_dirty[31:0]
-TestBench.cache.write_enable[3:0]
-TestBench.cache.write_enable_0[3:0]
-TestBench.cache.write_enable_1[3:0]
-TestBench.cache.write_enable_2[3:0]
-TestBench.cache.write_enable_3[3:0]
-TestBench.cache.state[7:0]
-@200
--/write enables
-@29
+TestBench.cache.busy
+TestBench.cache.data_out_ready
+TestBench.cache.burst_writing
 TestBench.cache.burst_fetching
 @22
-TestBench.cache.burst_write_enable_0[3:0]
-TestBench.cache.write_enable_0[3:0]
-TestBench.cache.burst_write_enable_1[3:0]
-TestBench.cache.write_enable_1[3:0]
-TestBench.cache.burst_write_enable_2[3:0]
-TestBench.cache.write_enable_2[3:0]
-TestBench.cache.burst_write_enable_3[3:0]
-TestBench.cache.write_enable_3[3:0]
-TestBench.cache.write_enable_4[3:0]
-TestBench.cache.burst_write_enable_4[3:0]
-TestBench.cache.write_enable_5[3:0]
-TestBench.cache.burst_write_enable_5[3:0]
-TestBench.cache.write_enable_6[3:0]
-TestBench.cache.burst_write_enable_6[3:0]
-TestBench.cache.write_enable_7[3:0]
-TestBench.cache.burst_write_enable_7[3:0]
-TestBench.cache.write_enable_tag[3:0]
-TestBench.cache.burst_write_enable_tag[3:0]
-@200
--burst ram
+TestBench.cache.write_enable[3:0]
 @28
-TestBench.cache.br_cmd
-TestBench.cache.br_cmd_en
-@22
-TestBench.cache.br_addr[3:0]
-@28
-TestBench.cache.br_rd_data_ready
-TestBench.br_busy
+TestBench.cache.cache_line_hit
+@29
+TestBench.cache.cache_line_hit
 [pattern_trace] 1
 [pattern_trace] 0

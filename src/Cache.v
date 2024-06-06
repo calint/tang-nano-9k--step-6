@@ -2,6 +2,8 @@
 // cache interfacing with burst ram memory
 //
 `default_nettype none
+// `define DBG
+// `define INFO
 
 module Cache #(
     parameter LINE_IX_BITWIDTH = 8,
@@ -26,6 +28,16 @@ module Cache #(
     input wire br_rd_data_ready,  // rd_data is valid
     input wire br_busy
 );
+
+`ifdef INFO
+  initial begin
+    $display("Cache");
+    $display("      lines: %0d", LINE_COUNT);
+    $display("    columns: %0d", 2 ** COLUMN_IX_BITWIDTH);
+    $display("        tag: %0d bits", TAG_BITWIDTH);
+    $display(" cache size: %0d B", LINE_COUNT * (2 ** COLUMN_IX_BITWIDTH) * 4);
+  end
+`endif
 
   localparam ZEROS_BITWIDTH = 2;  // leading zeros in the address
   localparam COLUMN_IX_BITWIDTH = 3;  // 8 elements per line
@@ -231,8 +243,16 @@ module Cache #(
       write_enable_6 = burst_write_enable_6;
       write_enable_7 = burst_write_enable_7;
       tag_data_in = {1'b0, 1'b1, line_tag_in};
+    end else
+    if (burst_writing) begin
     end else if (write_enable) begin
+`ifdef DBG
+      $display("write %h=%h", address, data_in);
+`endif
       if (cache_line_hit) begin
+`ifdef DBG
+        $display("cache hit");
+`endif
         write_enable_tag = 4'b1111;
         tag_data_in = {1'b1, 1'b1, line_tag_in};
         // note: { dirty, valid, tag }
@@ -271,6 +291,9 @@ module Cache #(
           end
         endcase
       end else begin  // not (cache_line_hit)
+`ifdef DBG
+        $display("cache miss");
+`endif
       end
     end
   end
@@ -331,9 +354,18 @@ module Cache #(
 
         STATE_IDLE: begin
           if (!cache_line_hit) begin
+`ifdef DBG
+            $display("cache miss");
+`endif
             if (write_enable) begin
+`ifdef DBG
+              $display("write");
+`endif
               // write
               if (line_dirty) begin
+`ifdef DBG
+                $display("line dirty, evict");
+`endif
                 br_cmd <= 1;  // command write
                 br_addr <= burst_ram_dirty_cache_line_write_address;
                 br_cmd_en <= 1;
@@ -343,6 +375,9 @@ module Cache #(
                 state <= STATE_WRITE_1;
               end
             end else begin
+`ifdef DBG
+              $display("fetch line");
+`endif
               // read
               br_cmd <= 0;  // command read
               br_addr <= burst_ram_cache_line_address;
@@ -442,11 +477,15 @@ module Cache #(
         end
 
         STATE_WRITE_FINISH: begin
+`ifdef DBG
+          $display("fetch line after eviction");
+`endif
           // start reading the cache line
           br_cmd <= 0;  // command read
           br_addr <= burst_ram_cache_line_address;
           br_cmd_en <= 1;
           burst_writing <= 0;
+          burst_fetching <= 1;
           state <= STATE_FETCH_WAIT_FOR_DATA_READY;
         end
 
@@ -457,3 +496,5 @@ module Cache #(
 endmodule
 
 `default_nettype wire
+`undef DBG
+`undef INFO
