@@ -9,7 +9,7 @@ module TestBench;
       .rst_n(sys_rst_n),
       .address(address),
       .data_out(data_out),
-      .data_out_valid(data_out_valid),
+      .data_out_ready(data_out_ready),
       .data_in(data_in),
       .write_enable(write_enable)
   );
@@ -20,7 +20,7 @@ module TestBench;
   reg [31:0] address;
   reg [31:0] data_in;
   wire [31:0] data_out;
-  wire data_out_valid;
+  wire data_out_ready;
 
   localparam clk_tk = 4;
   always #(clk_tk / 2) clk = ~clk;
@@ -67,7 +67,7 @@ module TestBench;
     #clk_tk;
 
     // one cycle delay. value for address 4
-    if (data_out == 32'habcd_ef12 && data_out_valid) $display("Test 1 passed");
+    if (data_out == 32'habcd_ef12 && data_out_ready) $display("Test 1 passed");
     else $display("Test 1 FAILED");
 
     // read; cache hit
@@ -75,7 +75,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_1234 && data_out_valid) $display("Test 2 passed");
+    if (data_out == 32'habcd_1234 && data_out_ready) $display("Test 2 passed");
     else $display("Test 2 FAILED");
 
     // read not valid
@@ -83,7 +83,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (!data_out_valid) $display("Test 3 passed");
+    if (!data_out_ready) $display("Test 3 passed");
     else $display("Test 3 FAILED");
 
     // read not valid
@@ -91,7 +91,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (!data_out_valid) $display("Test 4 passed");
+    if (!data_out_ready) $display("Test 4 passed");
     else $display("Test 4 FAILED");
 
     // read valid
@@ -99,7 +99,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_1234 && data_out_valid) $display("Test 5 passed");
+    if (data_out == 32'habcd_1234 && data_out_ready) $display("Test 5 passed");
     else $display("Test 5 FAILED");
 
     // write
@@ -113,7 +113,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_12ab && data_out_valid) $display("Test 6 passed");
+    if (data_out == 32'habcd_12ab && data_out_ready) $display("Test 6 passed");
     else $display("Test 6 FAILED");
 
     // write
@@ -127,7 +127,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_8765 && data_out_valid) $display("Test 8 passed");
+    if (data_out == 32'habcd_8765 && data_out_ready) $display("Test 8 passed");
     else $display("Test 8 FAILED");
 
     // write
@@ -141,7 +141,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'hfeef_8765 && data_out_valid) $display("Test 9 passed");
+    if (data_out == 32'hfeef_8765 && data_out_ready) $display("Test 9 passed");
     else $display("Test 9 FAILED");
 
     #clk_tk;

@@ -10,12 +10,11 @@ module Cache #(
     input wire rst_n,
     input wire [31:0] address,
     output reg [31:0] data_out,
-    output reg data_out_valid,
+    output reg data_out_ready,
     input wire [31:0] data_in,
     input wire [3:0] write_enable
 );
 
-  // 4 column cache line
   localparam ZEROS_BITWIDTH = 2;
   localparam COLUMN_IX_BITWIDTH = 2;
   localparam LINE_COUNT = 2 ** LINE_IX_BITWIDTH;
@@ -23,10 +22,19 @@ module Cache #(
   localparam LINE_VALID_BIT = TAG_BITWIDTH;
   localparam LINE_DIRTY_BIT = TAG_BITWIDTH + 1;
 
+  // wires dividing the address into components
+  // |tag|line| col |00| address
+  //                |00| ignored (4 bytes word aligned)
+  //          | col |    data_ix: the index of the data in the cached line
+  //     |line|          line_ix: index in array where tag and cached data is stored
+  // |tag|               tag: the rest of the upper bits of the address
+
   // extract cache line info from current address
   wire [COLUMN_IX_BITWIDTH-1:0] column_ix = address[COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:COLUMN_IX_BITWIDTH];
   wire [LINE_IX_BITWIDTH-1:0] line_ix =  address[LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:LINE_IX_BITWIDTH];
   wire [TAG_BITWIDTH-1:0] line_tag_in = address[TAG_BITWIDTH+LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:TAG_BITWIDTH];
+
+  // 4 column cache line
 
   BESDPB #(
       .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
@@ -102,7 +110,7 @@ module Cache #(
       3: data_out = data3_out;
     endcase
 
-    data_out_valid   = line_valid && line_tag_in == line_tag;
+    data_out_ready   = line_valid && line_tag_in == line_tag;
 
     write_enable_tag = 0;
     write_enable_0   = 0;
