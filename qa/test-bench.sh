@@ -15,7 +15,8 @@ pwd
 
 iverilog -Winfloop -pfileline=1 -o iverilog.vvp TestBench.v \
     $SRCPTH/BESDPB.v \
-    $SRCPTH/Cache.v
+    $SRCPTH/Cache.v \
+    $SRCPTH/BurstRAM.v
 
 vvp iverilog.vvp
 rm iverilog.vvp
