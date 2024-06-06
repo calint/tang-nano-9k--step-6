@@ -64,6 +64,7 @@ module Cache #(
   wire [31:0] line_tag_and_valid_dirty;
   reg [3:0] write_enable_tag;
   reg [31:0] tag_data_in;
+  reg write_line_dirty_bit;
 
   // extract portions of the combined tag, valid, dirty line info
   wire line_valid = line_tag_and_valid_dirty[LINE_VALID_BIT];
@@ -214,70 +215,45 @@ module Cache #(
       // writing to the cache line in a burst read
       // wire the controls from burst control
       write_enable_tag = burst_write_enable_tag;
-      write_enable_0 = burst_write_enable_0;
-      write_enable_1 = burst_write_enable_1;
-      write_enable_2 = burst_write_enable_2;
-      write_enable_3 = burst_write_enable_3;
-      write_enable_4 = burst_write_enable_4;
-      write_enable_5 = burst_write_enable_5;
-      write_enable_6 = burst_write_enable_6;
-      write_enable_7 = burst_write_enable_7;
-      tag_data_in = {1'b0, 1'b1, line_tag_in};
+      write_enable_0   = burst_write_enable_0;
+      write_enable_1   = burst_write_enable_1;
+      write_enable_2   = burst_write_enable_2;
+      write_enable_3   = burst_write_enable_3;
+      write_enable_4   = burst_write_enable_4;
+      write_enable_5   = burst_write_enable_5;
+      write_enable_6   = burst_write_enable_6;
+      write_enable_7   = burst_write_enable_7;
     end else if (write_enable) begin
       if (cache_line_hit) begin
         write_enable_tag = 4'b1111;
         tag_data_in = {1'b1, 1'b1, line_tag_in};
         // note: { dirty, valid, tag }
         case (column_ix)
-          0: begin
-            write_enable_0 = write_enable;
-            data_in_0 = data_in;
-          end
-          1: begin
-            write_enable_1 = write_enable;
-            data_in_1 = data_in;
-          end
-          2: begin
-            write_enable_2 = write_enable;
-            data_in_2 = data_in;
-          end
-          3: begin
-            write_enable_3 = write_enable;
-            data_in_3 = data_in;
-          end
-          4: begin
-            write_enable_4 = write_enable;
-            data_in_4 = data_in;
-          end
-          5: begin
-            write_enable_5 = write_enable;
-            data_in_5 = data_in;
-          end
-          6: begin
-            write_enable_6 = write_enable;
-            data_in_6 = data_in;
-          end
-          7: begin
-            write_enable_7 = write_enable;
-            data_in_7 = data_in;
-          end
+          0: write_enable_0 = write_enable;
+          1: write_enable_1 = write_enable;
+          2: write_enable_2 = write_enable;
+          3: write_enable_3 = write_enable;
+          4: write_enable_4 = write_enable;
+          5: write_enable_5 = write_enable;
+          6: write_enable_6 = write_enable;
+          7: write_enable_7 = write_enable;
         endcase
       end else begin  // not (cache_line_hit)
       end
     end
   end
 
-  reg [10:0] state;
-  localparam STATE_IDLE = 10'b00_0000_0001;
-  localparam STATE_FETCH_WAIT_FOR_DATA_READY = 10'b00_0000_0010;
-  localparam STATE_FETCH_READ_1 = 10'b00_0000_0100;
-  localparam STATE_FETCH_READ_2 = 10'b00_0000_1000;
-  localparam STATE_FETCH_READ_3 = 10'b00_0001_0000;
-  localparam STATE_FETCH_READ_FINISH = 10'b00_0010_0000;
-  localparam STATE_WRITE_1 = 10'b00_0100_0000;
-  localparam STATE_WRITE_2 = 10'b00_1000_0000;
-  localparam STATE_WRITE_3 = 10'b01_0000_0000;
-  localparam STATE_WRITE_FINISH = 10'b10_0000_0000;
+  reg [7:0] state;
+  localparam STATE_IDLE = 8'b0000_0001;
+  localparam STATE_FETCH_WAIT_FOR_DATA_READY = 8'b0000_0010;
+  localparam STATE_FETCH_READ_1 = 8'b0000_0100;
+  localparam STATE_FETCH_READ_2 = 8'b0000_1000;
+  localparam STATE_FETCH_READ_3 = 8'b0001_0000;
+  localparam STATE_FETCH_READ_FINISH = 8'b0010_0000;
+  localparam STATE_WRITE_1 = 8'b0000_0100;
+  localparam STATE_WRITE_2 = 8'b0000_1000;
+  localparam STATE_WRITE_3 = 8'b0001_0000;
+  localparam STATE_WRITE_FINISH = 8'b0010_0000;
 
   reg burst_fetching;  // high if in burst fetch operation
   reg burst_writing;  // high if in burst write operation
@@ -390,6 +366,7 @@ module Cache #(
 
           // write the tag
           burst_write_enable_tag <= 4'b1111;
+          write_line_dirty_bit <= 0;
 
           state <= STATE_FETCH_READ_FINISH;
         end

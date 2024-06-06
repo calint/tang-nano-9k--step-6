@@ -157,21 +157,21 @@ module TestBench;
     if (data_out == 32'h9D8E2F17 && data_out_ready) $display("Test 5 passed");
     else $display("Test 5 FAILED");
 
-    $finish;
-
-    // write
+    // write; cache hit
     address <= 8;
-    data_in <= 32'h000000ab;
+    data_in <= 32'h0000_00ad;
     write_enable <= 4'b0001;
     #clk_tk;
 
-    // write
+    // read; cache hit valid
     address <= 8;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_12ab && data_out_ready) $display("Test 6 passed");
+    if (data_out == 32'hAB4C3Ead && data_out_ready) $display("Test 6 passed");
     else $display("Test 6 FAILED");
+
+    #clk_tk;
 
     // write
     address <= 8;
@@ -184,7 +184,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'habcd_8765 && data_out_ready) $display("Test 8 passed");
+    if (data_out == 32'hAB4C8765 && data_out_ready) $display("Test 8 passed");
     else $display("Test 8 FAILED");
 
     // write
@@ -198,7 +198,7 @@ module TestBench;
     write_enable <= 0;
     #clk_tk;
 
-    if (data_out == 32'hfeef_8765 && data_out_ready) $display("Test 9 passed");
+    if (data_out == 32'hfeef8765 && data_out_ready) $display("Test 9 passed");
     else $display("Test 9 FAILED");
 
     #clk_tk;
