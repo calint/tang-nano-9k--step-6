@@ -313,7 +313,7 @@ module Cache #(
   reg burst_fetching;  // high if in burst fetch operation
   reg burst_writing;  // high if in burst write operation
 
-  assign busy = burst_fetching | burst_writing;
+  assign busy = !cache_line_hit;
 
   reg [ 3:0] burst_write_enable_tag;
   reg [ 3:0] burst_write_enable_0;

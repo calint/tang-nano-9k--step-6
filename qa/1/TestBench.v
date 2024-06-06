@@ -208,7 +208,6 @@ module TestBench;
     data_in <= 32'habcdef12;
     write_enable <= 4'b1111;
     #clk_tk;
-    #clk_tk;
 
     while (busy) #clk_tk;
 
