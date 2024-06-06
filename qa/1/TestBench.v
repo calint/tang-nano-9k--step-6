@@ -78,16 +78,16 @@ module TestBench;
     if (data_out == 32'habcd_1234 && data_out_ready) $display("Test 2 passed");
     else $display("Test 2 FAILED");
 
-    // read not valid
-    address <= 16;
+    // read not valid line
+    address <= 32;
     write_enable <= 0;
     #clk_tk;
 
     if (!data_out_ready) $display("Test 3 passed");
     else $display("Test 3 FAILED");
 
-    // read not valid
-    address <= 20;
+    // read not valid line
+    address <= 36;
     write_enable <= 0;
     #clk_tk;
 

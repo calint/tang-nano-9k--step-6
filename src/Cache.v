@@ -15,8 +15,8 @@ module Cache #(
     input wire [3:0] write_enable
 );
 
-  localparam ZEROS_BITWIDTH = 2;
-  localparam COLUMN_IX_BITWIDTH = 2;
+  localparam ZEROS_BITWIDTH = 2; // leading zeros in the address
+  localparam COLUMN_IX_BITWIDTH = 3; // 8 elements per line
   localparam LINE_COUNT = 2 ** LINE_IX_BITWIDTH;
   localparam TAG_BITWIDTH = 32 - LINE_IX_BITWIDTH - COLUMN_IX_BITWIDTH - ZEROS_BITWIDTH;
   localparam LINE_VALID_BIT = TAG_BITWIDTH;
@@ -102,12 +102,64 @@ module Cache #(
   wire [31:0] data3_out;
   reg  [ 3:0] write_enable_3;
 
+BESDPB #(
+      .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
+  ) data4 (
+      .clk(clk),
+      .write_enable(write_enable_4),
+      .address(line_ix),
+      .data_in(data_in),
+      .data_out(data4_out)
+  );
+  wire [31:0] data4_out;
+  reg  [ 3:0] write_enable_4;
+
+BESDPB #(
+      .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
+  ) data5 (
+      .clk(clk),
+      .write_enable(write_enable_5),
+      .address(line_ix),
+      .data_in(data_in),
+      .data_out(data5_out)
+  );
+  wire [31:0] data5_out;
+  reg  [ 3:0] write_enable_5;
+
+BESDPB #(
+      .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
+  ) data6 (
+      .clk(clk),
+      .write_enable(write_enable_6),
+      .address(line_ix),
+      .data_in(data_in),
+      .data_out(data6_out)
+  );
+  wire [31:0] data6_out;
+  reg  [ 3:0] write_enable_6;
+
+BESDPB #(
+      .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
+  ) data7 (
+      .clk(clk),
+      .write_enable(write_enable_7),
+      .address(line_ix),
+      .data_in(data_in),
+      .data_out(data7_out)
+  );
+  wire [31:0] data7_out;
+  reg  [ 3:0] write_enable_7;
+
   always @(*) begin
     case (column_ix)
       0: data_out = data0_out;
       1: data_out = data1_out;
       2: data_out = data2_out;
       3: data_out = data3_out;
+      4: data_out = data4_out;
+      5: data_out = data5_out;
+      6: data_out = data6_out;
+      7: data_out = data7_out;
     endcase
 
     data_out_ready   = line_valid && line_tag_in == line_tag;
@@ -117,6 +169,10 @@ module Cache #(
     write_enable_1   = 0;
     write_enable_2   = 0;
     write_enable_3   = 0;
+    write_enable_4   = 0;
+    write_enable_5   = 0;
+    write_enable_6   = 0;
+    write_enable_7   = 0;
     if (write_enable) begin
       write_enable_tag = 4'b1111;
       case (column_ix)
@@ -124,6 +180,10 @@ module Cache #(
         1: write_enable_1 = write_enable;
         2: write_enable_2 = write_enable;
         3: write_enable_3 = write_enable;
+        4: write_enable_4 = write_enable;
+        5: write_enable_5 = write_enable;
+        6: write_enable_6 = write_enable;
+        7: write_enable_7 = write_enable;
       endcase
     end
   end
