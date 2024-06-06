@@ -87,6 +87,7 @@ module Cache #(
   // note: <<2 because a cache line contains 4 burst ram words (32 B / 8 B = 4)
 
   wire cache_line_hit = line_valid && line_tag_in == line_tag;
+  assign busy = !cache_line_hit;
 
   BESDPB #(
       .ADDRESS_BITWIDTH(LINE_IX_BITWIDTH)
@@ -312,8 +313,6 @@ module Cache #(
 
   reg burst_fetching;  // high if in burst fetch operation
   reg burst_writing;  // high if in burst write operation
-
-  assign busy = !cache_line_hit;
 
   reg [ 3:0] burst_write_enable_tag;
   reg [ 3:0] burst_write_enable_0;
