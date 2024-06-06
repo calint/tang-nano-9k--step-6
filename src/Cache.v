@@ -82,7 +82,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_0),
       .address(line_ix),
-      .data_in(data_in_0),
+      .data_in(burst_fetching ? burst_data_in_0 : data_in_0),
       .data_out(data0_out)
   );
   wire [31:0] data0_out;
@@ -95,7 +95,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_1),
       .address(line_ix),
-      .data_in(data_in_1),
+      .data_in(burst_fetching ? burst_data_in_1 : data_in_1),
       .data_out(data1_out)
   );
   wire [31:0] data1_out;
@@ -108,7 +108,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_2),
       .address(line_ix),
-      .data_in(data_in_2),
+      .data_in(burst_fetching ? burst_data_in_2 : data_in_2),
       .data_out(data2_out)
   );
   wire [31:0] data2_out;
@@ -121,7 +121,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_3),
       .address(line_ix),
-      .data_in(data_in_3),
+      .data_in(burst_fetching ? burst_data_in_3 : data_in_3),
       .data_out(data3_out)
   );
   wire [31:0] data3_out;
@@ -134,7 +134,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_4),
       .address(line_ix),
-      .data_in(data_in_4),
+      .data_in(burst_fetching ? burst_data_in_4 : data_in_4),
       .data_out(data4_out)
   );
   wire [31:0] data4_out;
@@ -147,7 +147,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_5),
       .address(line_ix),
-      .data_in(data_in_5),
+      .data_in(burst_fetching ? burst_data_in_5 : data_in_5),
       .data_out(data5_out)
   );
   wire [31:0] data5_out;
@@ -160,7 +160,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_6),
       .address(line_ix),
-      .data_in(data_in_6),
+      .data_in(burst_fetching ? burst_data_in_6 : data_in_6),
       .data_out(data6_out)
   );
   wire [31:0] data6_out;
@@ -173,7 +173,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_7),
       .address(line_ix),
-      .data_in(data_in_7),
+      .data_in(burst_fetching ? burst_data_in_7 : data_in_7),
       .data_out(data7_out)
   );
   wire [31:0] data7_out;
@@ -202,13 +202,21 @@ module Cache #(
     write_enable_tag = 0;
     tag_data_in = 0;
     write_enable_0 = 0;
+    data_in_0 = 0;
     write_enable_1 = 0;
+    data_in_1 = 0;
     write_enable_2 = 0;
+    data_in_2 = 0;
     write_enable_3 = 0;
+    data_in_3 = 0;
     write_enable_4 = 0;
+    data_in_4 = 0;
     write_enable_5 = 0;
+    data_in_5 = 0;
     write_enable_6 = 0;
+    data_in_6 = 0;
     write_enable_7 = 0;
+    data_in_7 = 0;
 
     if (burst_fetching) begin
       // writing to the cache line in a burst read
@@ -284,15 +292,24 @@ module Cache #(
 
   assign busy = burst_fetching | burst_writing;
 
-  reg [3:0] burst_write_enable_tag;
-  reg [3:0] burst_write_enable_0;
-  reg [3:0] burst_write_enable_1;
-  reg [3:0] burst_write_enable_2;
-  reg [3:0] burst_write_enable_3;
-  reg [3:0] burst_write_enable_4;
-  reg [3:0] burst_write_enable_5;
-  reg [3:0] burst_write_enable_6;
-  reg [3:0] burst_write_enable_7;
+  reg [ 3:0] burst_write_enable_tag;
+  reg [ 3:0] burst_write_enable_0;
+  reg [31:0] burst_data_in_0;
+  reg [ 3:0] burst_write_enable_1;
+  reg [31:0] burst_data_in_1;
+  reg [ 3:0] burst_write_enable_2;
+  reg [31:0] burst_data_in_2;
+  reg [ 3:0] burst_write_enable_3;
+  reg [31:0] burst_data_in_3;
+  reg [ 3:0] burst_write_enable_4;
+  reg [31:0] burst_data_in_4;
+  reg [ 3:0] burst_write_enable_5;
+  reg [31:0] burst_data_in_5;
+  reg [ 3:0] burst_write_enable_6;
+  reg [31:0] burst_data_in_6;
+  reg [ 3:0] burst_write_enable_7;
+  reg [31:0] burst_data_in_7;
+
 
   always @(posedge clk) begin
     if (rst) begin
@@ -341,10 +358,11 @@ module Cache #(
           if (br_rd_data_ready) begin
             // first data has arrived
             burst_write_enable_0 <= 4'b1111;
-            data_in_0 <= br_rd_data[31:0];
+            burst_data_in_0 <= br_rd_data[31:0];
 
             burst_write_enable_1 <= 4'b1111;
-            data_in_1 <= br_rd_data[63:32];
+            burst_data_in_1 <= br_rd_data[63:32];
+
             state <= STATE_FETCH_READ_1;
           end
         end
@@ -355,10 +373,10 @@ module Cache #(
           burst_write_enable_1 <= 0;
 
           burst_write_enable_2 <= 4'b1111;
-          data_in_2 <= br_rd_data[31:0];
+          burst_data_in_2 <= br_rd_data[31:0];
 
           burst_write_enable_3 <= 4'b1111;
-          data_in_3 <= br_rd_data[63:32];
+          burst_data_in_3 <= br_rd_data[63:32];
 
           state <= STATE_FETCH_READ_2;
         end
@@ -369,10 +387,10 @@ module Cache #(
           burst_write_enable_3 <= 0;
 
           burst_write_enable_4 <= 4'b1111;
-          data_in_4 <= br_rd_data[31:0];
+          burst_data_in_4 <= br_rd_data[31:0];
 
           burst_write_enable_5 <= 4'b1111;
-          data_in_5 <= br_rd_data[63:32];
+          burst_data_in_5 <= br_rd_data[63:32];
 
           state <= STATE_FETCH_READ_3;
         end
@@ -383,10 +401,10 @@ module Cache #(
           burst_write_enable_5 <= 0;
 
           burst_write_enable_6 <= 4'b1111;
-          data_in_6 <= br_rd_data[31:0];
+          burst_data_in_6 <= br_rd_data[31:0];
 
           burst_write_enable_7 <= 4'b1111;
-          data_in_7 <= br_rd_data[63:32];
+          burst_data_in_7 <= br_rd_data[63:32];
 
           // write the tag
           burst_write_enable_tag <= 4'b1111;
