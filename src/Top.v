@@ -18,14 +18,14 @@ module Top (
       .rst_n(sys_rst_n),
       .address(address),
       .data_out(data_out),
-      .data_out_valid(data_out_valid),
+      .data_out_ready(data_out_ready),
       .data_in(data_in),
       .write_enable(write_enable)
   );
 
   reg [31:0] address;
   wire [31:0] data_out;
-  wire data_out_valid;
+  wire data_out_ready;
   reg [31:0] data_in;
   reg [3:0] write_enable;
 
@@ -40,25 +40,25 @@ module Top (
       led[5] = btn1;  // note: to rid off 'unused warning'
       case (state)
         0: begin
-          led <= {data_out_valid, data_out[3:0]};
+          led <= {data_out_ready, data_out[3:0]};
           data_in <= 32'h1234_5678;
           write_enable <= 4'b1111;
           state <= 1;
         end
         1: begin
-          led <= {data_out_valid, data_out[3:0]};
+          led <= {data_out_ready, data_out[3:0]};
           write_enable <= 0;
           address <= address + 4;
           state <= 2;
         end
         2: begin
-          led <= {data_out_valid, data_out[3:0]};
+          led <= {data_out_ready, data_out[3:0]};
           data_in <= 32'h1234_5678;
           write_enable <= 4'b1111;
           state <= 3;
         end
         3: begin
-          led <= {data_out_valid, data_out[3:0]};
+          led <= {data_out_ready, data_out[3:0]};
           write_enable <= 0;
           address <= address + 4;
           state <= 0;
