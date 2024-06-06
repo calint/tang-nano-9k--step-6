@@ -14,6 +14,7 @@ module Cache #(
     output reg data_out_ready,
     input wire [31:0] data_in,
     input wire [3:0] write_enable,
+    output wire busy,
 
     // burst ram wiring
     output reg br_cmd,  // 0: read, 1: write
@@ -243,6 +244,9 @@ module Cache #(
   localparam STATE_FETCH_READ_FINISH = 8'b0010_0000;
 
   reg burst_fetching;  // high if in burst fetch operation
+  reg burst_writing;  // high if in burst write operation
+
+  assign busy = burst_fetching | burst_writing;
 
   reg [3:0] burst_write_enable_tag;
   reg [3:0] burst_write_enable_0;
@@ -267,6 +271,7 @@ module Cache #(
       burst_write_enable_7 <= 0;
       br_data_mask <= 4'b1111;
       burst_fetching <= 0;
+      burst_writing <= 0;
       state <= STATE_IDLE;
     end else begin
       case (state)
