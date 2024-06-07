@@ -61,7 +61,7 @@ module Cache #(
   wire [TAG_BITWIDTH-1:0] line_tag_from_address = address[TAG_BITWIDTH+LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:TAG_BITWIDTH];
 
   // starting address in burst RAM for the cache line containing the requested address
-  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_cache_line_address = address[31:COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH]<<2;
+  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_cache_line_address = address[31:COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH]<<2;
   // note: <<2 because a cache line contains 4 reads from the burst (32 B / 8 B = 4)
 
   // 4 column cache line
@@ -85,7 +85,7 @@ module Cache #(
   wire [TAG_BITWIDTH-1:0] line_tag_from_cache = line_tag_and_flags_from_cache[TAG_BITWIDTH-1:0];
 
   // starting address in burst RAM for the cache line tag
-  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_dirty_cache_line_address = {line_tag_from_cache,line_ix}<<2;
+  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_dirty_cache_line_address = {line_tag_from_cache,line_ix}<<2;
   // note: <<2 because a cache line contains 4 burst RAM words (32 B / 8 B = 4)
 
   wire cache_line_hit = line_valid && line_tag_from_address == line_tag_from_cache;
@@ -372,10 +372,10 @@ module Cache #(
               if (line_dirty) begin
 `ifdef DBG
                 $display("@(c) line dirty, evict to RAM address 0x%h",
-                         burst_ram_dirty_cache_line_address);
+                         burst_dirty_cache_line_address);
 `endif
                 br_cmd <= 1;  // command write
-                br_addr <= burst_ram_dirty_cache_line_address;
+                br_addr <= burst_dirty_cache_line_address;
                 br_cmd_en <= 1;
                 br_wr_data[31:0] <= data0_out;
                 br_wr_data[63:32] <= data1_out;
@@ -387,11 +387,11 @@ module Cache #(
               end
             end else begin  // not (line_dirty)
 `ifdef DBG
-              $display("@(c) read line from RAM address 0x%h", burst_ram_cache_line_address);
+              $display("@(c) read line from RAM address 0x%h", burst_cache_line_address);
 `endif
               // read
               br_cmd <= 0;  // command read
-              br_addr <= burst_ram_cache_line_address;
+              br_addr <= burst_cache_line_address;
               br_cmd_en <= 1;
               burst_reading <= 1;
               state <= STATE_READ_WAIT_FOR_DATA_READY;
@@ -508,12 +508,11 @@ module Cache #(
 
         STATE_WRITE_FINISH: begin
 `ifdef DBG
-          $display("@(c) read line after eviction from RAM address 0x%h",
-                   burst_ram_cache_line_address);
+          $display("@(c) read line after eviction from RAM address 0x%h", burst_cache_line_address);
 `endif
           // start reading the cache line
           br_cmd <= 0;  // command read
-          br_addr <= burst_ram_cache_line_address;
+          br_addr <= burst_cache_line_address;
           br_cmd_en <= 1;
           burst_writing <= 0;
           burst_reading <= 1;
