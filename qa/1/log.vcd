@@ -1,5 +1,5 @@
 $date
-	Fri Jun  7 11:20:33 2024
+	Fri Jun  7 11:57:17 2024
 $end
 $version
 	Icarus Verilog
@@ -94,12 +94,12 @@ $var parameter 32 e LINE_COUNT $end
 $var parameter 36 f LINE_DIRTY_BIT $end
 $var parameter 32 g LINE_IX_BITWIDTH $end
 $var parameter 35 h LINE_VALID_BIT $end
-$var parameter 10 i STATE_FETCH_READ_1 $end
-$var parameter 10 j STATE_FETCH_READ_2 $end
-$var parameter 10 k STATE_FETCH_READ_3 $end
-$var parameter 10 l STATE_FETCH_READ_FINISH $end
-$var parameter 10 m STATE_FETCH_WAIT_FOR_DATA_READY $end
-$var parameter 10 n STATE_IDLE $end
+$var parameter 10 i STATE_IDLE $end
+$var parameter 10 j STATE_READ_1 $end
+$var parameter 10 k STATE_READ_2 $end
+$var parameter 10 l STATE_READ_3 $end
+$var parameter 10 m STATE_READ_FINISH $end
+$var parameter 10 n STATE_READ_WAIT_FOR_DATA_READY $end
 $var parameter 10 o STATE_WRITE_1 $end
 $var parameter 10 p STATE_WRITE_2 $end
 $var parameter 10 q STATE_WRITE_3 $end
@@ -324,12 +324,12 @@ b1000000000 r
 b100000000 q
 b10000000 p
 b1000000 o
-b1 n
-b10 m
-b100000 l
-b10000 k
-b1000 j
-b100 i
+b10 n
+b100000 m
+b10000 l
+b1000 k
+b100 j
+b1 i
 b11010 h
 b1 g
 b11011 f
@@ -1100,10 +1100,10 @@ b100 a
 1#
 0N
 b100 b
+0R
 0!
 b0 "
 b0 6"
-0R
 b0 `
 b0 _
 b0 B"

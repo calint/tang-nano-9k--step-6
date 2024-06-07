@@ -4,8 +4,8 @@
 // reviewed 2024-06-07
 //
 `default_nettype none
-// `define DBG
-// `define INFO
+`define DBG
+`define INFO
 
 module Cache #(
     parameter LINE_IX_BITWIDTH = 8,
@@ -35,7 +35,7 @@ module Cache #(
   initial begin
     $display("Cache");
     $display("      lines: %0d", LINE_COUNT);
-    $display("    columns: %0d", 2 ** COLUMN_IX_BITWIDTH);
+    $display("    columns: %0d x 4B", 2 ** COLUMN_IX_BITWIDTH);
     $display("        tag: %0d bits", TAG_BITWIDTH);
     $display(" cache size: %0d B", LINE_COUNT * (2 ** COLUMN_IX_BITWIDTH) * 4);
   end
@@ -251,12 +251,12 @@ module Cache #(
     if (burst_writing) begin
     end else if (write_enable) begin
 `ifdef DBG
-      $display("write 0x%h = 0x%h  mask: %b  line: %0d  column: %0d", address, data_in,
+      $display("@(*) write 0x%h = 0x%h  mask: %b  line: %0d  column: %0d", address, data_in,
                write_enable, line_ix, column_ix);
 `endif
       if (cache_line_hit) begin
 `ifdef DBG
-        $display("cache hit, set flag dirty");
+        $display("@(*) cache hit, set flag dirty");
 `endif
         write_enable_tag = 4'b1111;
         data_in_tag = {1'b1, 1'b1, line_tag_in};
@@ -297,23 +297,24 @@ module Cache #(
         endcase
       end else begin  // not (cache_line_hit)
 `ifdef DBG
-        $display("cache miss");
+        $display("@(*) cache miss");
 `endif
       end
     end else begin
 `ifdef DBG
-      $display("read 0x%h  line: %0d  column: %0d", address, line_ix, column_ix);
+      $display("@(*) read 0x%h  line: %0d  column: %0d  data ready: %0d", address, line_ix,
+               column_ix, data_out_ready);
 `endif
     end
   end
 
   reg [10:0] state;
   localparam STATE_IDLE = 10'b00_0000_0001;
-  localparam STATE_FETCH_WAIT_FOR_DATA_READY = 10'b00_0000_0010;
-  localparam STATE_FETCH_READ_1 = 10'b00_0000_0100;
-  localparam STATE_FETCH_READ_2 = 10'b00_0000_1000;
-  localparam STATE_FETCH_READ_3 = 10'b00_0001_0000;
-  localparam STATE_FETCH_READ_FINISH = 10'b00_0010_0000;
+  localparam STATE_READ_WAIT_FOR_DATA_READY = 10'b00_0000_0010;
+  localparam STATE_READ_1 = 10'b00_0000_0100;
+  localparam STATE_READ_2 = 10'b00_0000_1000;
+  localparam STATE_READ_3 = 10'b00_0001_0000;
+  localparam STATE_READ_FINISH = 10'b00_0010_0000;
   localparam STATE_WRITE_1 = 10'b00_0100_0000;
   localparam STATE_WRITE_2 = 10'b00_1000_0000;
   localparam STATE_WRITE_3 = 10'b01_0000_0000;
@@ -361,16 +362,16 @@ module Cache #(
         STATE_IDLE: begin
           if (!cache_line_hit) begin
 `ifdef DBG
-            $display("address 0x%h  write: %b: cache miss", address, write_enable);
+            $display("@(c) cache miss address 0x%h  write mask: %b", address, write_enable);
 `endif
             if (write_enable) begin
 `ifdef DBG
-              $display("write");
+              $display("@(c) write");
 `endif
               // write
               if (line_dirty) begin
 `ifdef DBG
-                $display("line dirty, evict to RAM address 0x%h",
+                $display("@(c) line dirty, evict to RAM address 0x%h",
                          burst_ram_dirty_cache_line_address);
 `endif
                 br_cmd <= 1;  // command write
@@ -379,26 +380,26 @@ module Cache #(
                 br_wr_data[31:0] <= data0_out;
                 br_wr_data[63:32] <= data1_out;
 `ifdef DBG
-                $display("write line (1): 0x%h%h", data0_out, data1_out);
+                $display("@(c) write line (1): 0x%h%h", data0_out, data1_out);
 `endif
                 burst_writing <= 1;
                 state <= STATE_WRITE_1;
               end
             end else begin  // not (line_dirty)
 `ifdef DBG
-              $display("read line from RAM address 0x%h", burst_ram_cache_line_address);
+              $display("@(c) read line from RAM address 0x%h", burst_ram_cache_line_address);
 `endif
               // read
               br_cmd <= 0;  // command read
               br_addr <= burst_ram_cache_line_address;
               br_cmd_en <= 1;
               burst_reading <= 1;
-              state <= STATE_FETCH_WAIT_FOR_DATA_READY;
+              state <= STATE_READ_WAIT_FOR_DATA_READY;
             end
           end
         end
 
-        STATE_FETCH_WAIT_FOR_DATA_READY: begin
+        STATE_READ_WAIT_FOR_DATA_READY: begin
           br_cmd_en <= 0;
           if (br_rd_data_ready) begin
             // first data has arrived
@@ -408,13 +409,13 @@ module Cache #(
             burst_write_enable_1 <= 4'b1111;
             burst_data_in_1 <= br_rd_data[63:32];
 `ifdef DBG
-            $display("read line (1): 0x%h", br_rd_data);
+            $display("@(c) read line (1): 0x%h", br_rd_data);
 `endif
-            state <= STATE_FETCH_READ_1;
+            state <= STATE_READ_1;
           end
         end
 
-        STATE_FETCH_READ_1: begin
+        STATE_READ_1: begin
           // second data has arrived
           burst_write_enable_0 <= 0;
           burst_write_enable_1 <= 0;
@@ -425,12 +426,12 @@ module Cache #(
           burst_write_enable_3 <= 4'b1111;
           burst_data_in_3 <= br_rd_data[63:32];
 `ifdef DBG
-          $display("read line (2): 0x%h", br_rd_data);
+          $display("@(c) read line (2): 0x%h", br_rd_data);
 `endif
-          state <= STATE_FETCH_READ_2;
+          state <= STATE_READ_2;
         end
 
-        STATE_FETCH_READ_2: begin
+        STATE_READ_2: begin
           // third data has arrived
           burst_write_enable_2 <= 0;
           burst_write_enable_3 <= 0;
@@ -441,12 +442,12 @@ module Cache #(
           burst_write_enable_5 <= 4'b1111;
           burst_data_in_5 <= br_rd_data[63:32];
 `ifdef DBG
-          $display("read line (3): 0x%h", br_rd_data);
+          $display("@(c) read line (3): 0x%h", br_rd_data);
 `endif
-          state <= STATE_FETCH_READ_3;
+          state <= STATE_READ_3;
         end
 
-        STATE_FETCH_READ_3: begin
+        STATE_READ_3: begin
           // last data has arrived
           burst_write_enable_4 <= 0;
           burst_write_enable_5 <= 0;
@@ -460,14 +461,16 @@ module Cache #(
           // write the tag
           burst_write_enable_tag <= 4'b1111;
 `ifdef DBG
-          $display("read line (4): 0x%h", br_rd_data);
+          $display("@(c) read line (4): 0x%h", br_rd_data);
 `endif
-          state <= STATE_FETCH_READ_FINISH;
+          state <= STATE_READ_FINISH;
         end
 
-        STATE_FETCH_READ_FINISH: begin
+        STATE_READ_FINISH: begin
           burst_write_enable_6 <= 0;
           burst_write_enable_7 <= 0;
+          // note: reading line can be initiated after a cache eviction
+          //       'burst_write_enable_6' and 7 are then high, set to low
           burst_write_enable_tag <= 0;
           burst_reading <= 0;
           state <= STATE_IDLE;
@@ -475,7 +478,7 @@ module Cache #(
 
         STATE_WRITE_1: begin
 `ifdef DBG
-          $display("write line (2): 0x%h%h", data2_out, data3_out);
+          $display("@(c) write line (2): 0x%h%h", data2_out, data3_out);
 `endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data2_out;
@@ -485,7 +488,7 @@ module Cache #(
 
         STATE_WRITE_2: begin
 `ifdef DBG
-          $display("write line (3): 0x%h%h", data4_out, data5_out);
+          $display("@(c) write line (3): 0x%h%h", data4_out, data5_out);
 `endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data4_out;
@@ -495,7 +498,7 @@ module Cache #(
 
         STATE_WRITE_3: begin
 `ifdef DBG
-          $display("write line (4): 0x%h%h", data6_out, data7_out);
+          $display("@(c) write line (4): 0x%h%h", data6_out, data7_out);
 `endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data6_out;
@@ -505,7 +508,8 @@ module Cache #(
 
         STATE_WRITE_FINISH: begin
 `ifdef DBG
-          $display("read line after eviction from RAM address 0x%h", burst_ram_cache_line_address);
+          $display("@(c) read line after eviction from RAM address 0x%h",
+                   burst_ram_cache_line_address);
 `endif
           // start reading the cache line
           br_cmd <= 0;  // command read
@@ -513,7 +517,7 @@ module Cache #(
           br_cmd_en <= 1;
           burst_writing <= 0;
           burst_reading <= 1;
-          state <= STATE_FETCH_WAIT_FOR_DATA_READY;
+          state <= STATE_READ_WAIT_FOR_DATA_READY;
         end
 
       endcase
