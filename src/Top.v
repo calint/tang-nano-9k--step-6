@@ -49,6 +49,7 @@ module Top (
       .data_out_ready(data_out_ready),
       .data_in(data_in),
       .write_enable(write_enable),
+      .busy(busy),
 
       // burst ram wiring; prefix 'br_'
       .br_cmd(br_cmd),
@@ -65,6 +66,7 @@ module Top (
   wire data_out_ready;
   reg [31:0] data_in;
   reg [3:0] write_enable;
+  wire busy;
 
   reg [3:0] state;
 
