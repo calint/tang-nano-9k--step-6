@@ -4,8 +4,8 @@
 // reviewed 2024-06-07
 //
 `default_nettype none
-`define DBG
-`define INFO
+// `define DBG
+// `define INFO
 
 module Cache #(
     parameter LINE_IX_BITWIDTH = 8,
@@ -53,12 +53,12 @@ module Cache #(
   //                |00| ignored (4 bytes word aligned)
   //          | col |    column_ix: the index of the data in the cached line
   //     |line|          line_ix: index in array where tag and cached data is stored
-  // |tag|               line_tag_in: upper bits followed by 'valid' and 'dirty' flag
+  // |tag|               line_tag_from_address: upper bits followed by 'valid' and 'dirty' flag
 
   // extract cache line info from current address
   wire [COLUMN_IX_BITWIDTH-1:0] column_ix = address[COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:COLUMN_IX_BITWIDTH];
   wire [LINE_IX_BITWIDTH-1:0] line_ix =  address[LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:LINE_IX_BITWIDTH];
-  wire [TAG_BITWIDTH-1:0] line_tag_in = address[TAG_BITWIDTH+LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:TAG_BITWIDTH];
+  wire [TAG_BITWIDTH-1:0] line_tag_from_address = address[TAG_BITWIDTH+LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:TAG_BITWIDTH];
 
   // starting address in burst RAM for the cache line containing the requested address
   wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_cache_line_address = address[31:COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH]<<2;
@@ -73,22 +73,22 @@ module Cache #(
       .write_enable(write_enable_tag),
       .address(line_ix),
       .data_in(data_in_tag),
-      .data_out(line_tag_and_valid_dirty)
+      .data_out(line_tag_and_flags_from_cache)
   );
-  wire [31:0] line_tag_and_valid_dirty;
+  wire [31:0] line_tag_and_flags_from_cache;
   reg [3:0] write_enable_tag;
   reg [31:0] data_in_tag;
 
   // extract portions of the combined tag, valid, dirty line info
-  wire line_valid = line_tag_and_valid_dirty[LINE_VALID_BIT];
-  wire line_dirty = line_tag_and_valid_dirty[LINE_DIRTY_BIT];
-  wire [TAG_BITWIDTH-1:0] line_tag = line_tag_and_valid_dirty[TAG_BITWIDTH-1:0];
+  wire line_valid = line_tag_and_flags_from_cache[LINE_VALID_BIT];
+  wire line_dirty = line_tag_and_flags_from_cache[LINE_DIRTY_BIT];
+  wire [TAG_BITWIDTH-1:0] line_tag_from_cache = line_tag_and_flags_from_cache[TAG_BITWIDTH-1:0];
 
   // starting address in burst RAM for the cache line tag
-  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_dirty_cache_line_address = {line_tag,line_ix}<<2;
+  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_dirty_cache_line_address = {line_tag_from_cache,line_ix}<<2;
   // note: <<2 because a cache line contains 4 burst RAM words (32 B / 8 B = 4)
 
-  wire cache_line_hit = line_valid && line_tag_in == line_tag;
+  wire cache_line_hit = line_valid && line_tag_from_address == line_tag_from_cache;
   assign busy = !cache_line_hit;
 
   BESDPB #(
@@ -245,10 +245,10 @@ module Cache #(
       write_enable_5 = burst_write_enable_5;
       write_enable_6 = burst_write_enable_6;
       write_enable_7 = burst_write_enable_7;
-      data_in_tag = {1'b0, 1'b1, line_tag_in};
+      data_in_tag = {1'b0, 1'b1, line_tag_from_address};
       // note: {dirty, valid, upper address bits}
-    end else
-    if (burst_writing) begin
+    end else if (burst_writing) begin
+      //
     end else if (write_enable) begin
 `ifdef DBG
       $display("@(*) write 0x%h = 0x%h  mask: %b  line: %0d  column: %0d", address, data_in,
@@ -259,7 +259,7 @@ module Cache #(
         $display("@(*) cache hit, set flag dirty");
 `endif
         write_enable_tag = 4'b1111;
-        data_in_tag = {1'b1, 1'b1, line_tag_in};
+        data_in_tag = {1'b1, 1'b1, line_tag_from_address};
         // note: { dirty, valid, tag }
         case (column_ix)
           0: begin
