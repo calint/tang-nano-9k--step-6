@@ -1,5 +1,7 @@
 //
-// cache interfacing with burst ram memory
+// cache interfacing with burst RAM memory
+//
+// reviewed 2024-06-07
 //
 `default_nettype none
 // `define DBG
@@ -18,7 +20,7 @@ module Cache #(
     input wire [3:0] write_enable,
     output wire busy,
 
-    // burst ram wiring
+    // burst RAM wiring; prefix 'br_'
     output reg br_cmd,  // 0: read, 1: write
     output reg br_cmd_en,  // 1: cmd and addr is valid
     output reg [BURST_RAM_DEPTH_BITWIDTH-1:0] br_addr,  // 8 bytes word
@@ -40,7 +42,7 @@ module Cache #(
 `endif
 
   localparam ZEROS_BITWIDTH = 2;  // leading zeros in the address
-  localparam COLUMN_IX_BITWIDTH = 3;  // 8 elements per line
+  localparam COLUMN_IX_BITWIDTH = 3;  // 2 ^ 3 = 8 elements per line
   localparam LINE_COUNT = 2 ** LINE_IX_BITWIDTH;
   localparam TAG_BITWIDTH = 32 - LINE_IX_BITWIDTH - COLUMN_IX_BITWIDTH - ZEROS_BITWIDTH;
   localparam LINE_VALID_BIT = TAG_BITWIDTH;
@@ -49,16 +51,16 @@ module Cache #(
   // wires dividing the address into components
   // |tag|line| col |00| address
   //                |00| ignored (4 bytes word aligned)
-  //          | col |    data_ix: the index of the data in the cached line
+  //          | col |    column_ix: the index of the data in the cached line
   //     |line|          line_ix: index in array where tag and cached data is stored
-  // |tag|               tag: the rest of the upper bits of the address
+  // |tag|               line_tag_in: upper bits followed by 'valid' and 'dirty' flag
 
   // extract cache line info from current address
   wire [COLUMN_IX_BITWIDTH-1:0] column_ix = address[COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:COLUMN_IX_BITWIDTH];
   wire [LINE_IX_BITWIDTH-1:0] line_ix =  address[LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:LINE_IX_BITWIDTH];
   wire [TAG_BITWIDTH-1:0] line_tag_in = address[TAG_BITWIDTH+LINE_IX_BITWIDTH+COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH-1-:TAG_BITWIDTH];
 
-  // starting address in burst ram for the cache line containing the requested address
+  // starting address in burst RAM for the cache line containing the requested address
   wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_cache_line_address = address[31:COLUMN_IX_BITWIDTH+ZEROS_BITWIDTH]<<2;
   // note: <<2 because a cache line contains 4 reads from the burst (32 B / 8 B = 4)
 
@@ -70,21 +72,21 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_tag),
       .address(line_ix),
-      .data_in(tag_data_in),
+      .data_in(data_in_tag),
       .data_out(line_tag_and_valid_dirty)
   );
   wire [31:0] line_tag_and_valid_dirty;
   reg [3:0] write_enable_tag;
-  reg [31:0] tag_data_in;
+  reg [31:0] data_in_tag;
 
   // extract portions of the combined tag, valid, dirty line info
   wire line_valid = line_tag_and_valid_dirty[LINE_VALID_BIT];
   wire line_dirty = line_tag_and_valid_dirty[LINE_DIRTY_BIT];
   wire [TAG_BITWIDTH-1:0] line_tag = line_tag_and_valid_dirty[TAG_BITWIDTH-1:0];
 
-  // starting address in burst ram for the cache line tag
-  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_dirty_cache_line_write_address = {line_tag,line_ix}<<2;
-  // note: <<2 because a cache line contains 4 burst ram words (32 B / 8 B = 4)
+  // starting address in burst RAM for the cache line tag
+  wire [BURST_RAM_DEPTH_BITWIDTH-1:0] burst_ram_dirty_cache_line_address = {line_tag,line_ix}<<2;
+  // note: <<2 because a cache line contains 4 burst RAM words (32 B / 8 B = 4)
 
   wire cache_line_hit = line_valid && line_tag_in == line_tag;
   assign busy = !cache_line_hit;
@@ -95,7 +97,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_0),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_0 : data_in_0),
+      .data_in(burst_reading ? burst_data_in_0 : data_in_0),
       .data_out(data0_out)
   );
   wire [31:0] data0_out;
@@ -108,7 +110,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_1),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_1 : data_in_1),
+      .data_in(burst_reading ? burst_data_in_1 : data_in_1),
       .data_out(data1_out)
   );
   wire [31:0] data1_out;
@@ -121,7 +123,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_2),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_2 : data_in_2),
+      .data_in(burst_reading ? burst_data_in_2 : data_in_2),
       .data_out(data2_out)
   );
   wire [31:0] data2_out;
@@ -134,7 +136,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_3),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_3 : data_in_3),
+      .data_in(burst_reading ? burst_data_in_3 : data_in_3),
       .data_out(data3_out)
   );
   wire [31:0] data3_out;
@@ -147,7 +149,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_4),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_4 : data_in_4),
+      .data_in(burst_reading ? burst_data_in_4 : data_in_4),
       .data_out(data4_out)
   );
   wire [31:0] data4_out;
@@ -160,7 +162,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_5),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_5 : data_in_5),
+      .data_in(burst_reading ? burst_data_in_5 : data_in_5),
       .data_out(data5_out)
   );
   wire [31:0] data5_out;
@@ -173,7 +175,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_6),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_6 : data_in_6),
+      .data_in(burst_reading ? burst_data_in_6 : data_in_6),
       .data_out(data6_out)
   );
   wire [31:0] data6_out;
@@ -186,7 +188,7 @@ module Cache #(
       .clk(clk),
       .write_enable(write_enable_7),
       .address(line_ix),
-      .data_in(burst_fetching ? burst_data_in_7 : data_in_7),
+      .data_in(burst_reading ? burst_data_in_7 : data_in_7),
       .data_out(data7_out)
   );
   wire [31:0] data7_out;
@@ -213,7 +215,7 @@ module Cache #(
 
     // if it is a write
     write_enable_tag = 0;
-    tag_data_in = 0;
+    data_in_tag = 0;
     write_enable_0 = 0;
     data_in_0 = 0;
     write_enable_1 = 0;
@@ -231,7 +233,7 @@ module Cache #(
     write_enable_7 = 0;
     data_in_7 = 0;
 
-    if (burst_fetching) begin
+    if (burst_reading) begin
       // writing to the cache line in a burst read
       // wire the controls from burst control
       write_enable_tag = burst_write_enable_tag;
@@ -243,19 +245,21 @@ module Cache #(
       write_enable_5 = burst_write_enable_5;
       write_enable_6 = burst_write_enable_6;
       write_enable_7 = burst_write_enable_7;
-      tag_data_in = {1'b0, 1'b1, line_tag_in};
+      data_in_tag = {1'b0, 1'b1, line_tag_in};
+      // note: {dirty, valid, upper address bits}
     end else
     if (burst_writing) begin
     end else if (write_enable) begin
 `ifdef DBG
-      $display("write %h=%h", address, data_in);
+      $display("write 0x%h = 0x%h  mask: %b  line: %0d  column: %0d", address, data_in,
+               write_enable, line_ix, column_ix);
 `endif
       if (cache_line_hit) begin
 `ifdef DBG
-        $display("cache hit");
+        $display("cache hit, set flag dirty");
 `endif
         write_enable_tag = 4'b1111;
-        tag_data_in = {1'b1, 1'b1, line_tag_in};
+        data_in_tag = {1'b1, 1'b1, line_tag_in};
         // note: { dirty, valid, tag }
         case (column_ix)
           0: begin
@@ -296,6 +300,10 @@ module Cache #(
         $display("cache miss");
 `endif
       end
+    end else begin
+`ifdef DBG
+      $display("read 0x%h  line: %0d  column: %0d", address, line_ix, column_ix);
+`endif
     end
   end
 
@@ -311,27 +319,26 @@ module Cache #(
   localparam STATE_WRITE_3 = 10'b01_0000_0000;
   localparam STATE_WRITE_FINISH = 10'b10_0000_0000;
 
-  reg burst_fetching;  // high if in burst fetch operation
+  reg burst_reading;  // high if in burst read operation
   reg burst_writing;  // high if in burst write operation
 
-  reg [ 3:0] burst_write_enable_tag;
-  reg [ 3:0] burst_write_enable_0;
+  reg [3:0] burst_write_enable_tag;
+  reg [3:0] burst_write_enable_0;
   reg [31:0] burst_data_in_0;
-  reg [ 3:0] burst_write_enable_1;
+  reg [3:0] burst_write_enable_1;
   reg [31:0] burst_data_in_1;
-  reg [ 3:0] burst_write_enable_2;
+  reg [3:0] burst_write_enable_2;
   reg [31:0] burst_data_in_2;
-  reg [ 3:0] burst_write_enable_3;
+  reg [3:0] burst_write_enable_3;
   reg [31:0] burst_data_in_3;
-  reg [ 3:0] burst_write_enable_4;
+  reg [3:0] burst_write_enable_4;
   reg [31:0] burst_data_in_4;
-  reg [ 3:0] burst_write_enable_5;
+  reg [3:0] burst_write_enable_5;
   reg [31:0] burst_data_in_5;
-  reg [ 3:0] burst_write_enable_6;
+  reg [3:0] burst_write_enable_6;
   reg [31:0] burst_data_in_6;
-  reg [ 3:0] burst_write_enable_7;
+  reg [3:0] burst_write_enable_7;
   reg [31:0] burst_data_in_7;
-
 
   always @(posedge clk) begin
     if (rst) begin
@@ -345,7 +352,7 @@ module Cache #(
       burst_write_enable_6 <= 0;
       burst_write_enable_7 <= 0;
       br_data_mask <= 4'b1111;
-      burst_fetching <= 0;
+      burst_reading <= 0;
       burst_writing <= 0;
       state <= STATE_IDLE;
     end else begin
@@ -354,7 +361,7 @@ module Cache #(
         STATE_IDLE: begin
           if (!cache_line_hit) begin
 `ifdef DBG
-            $display("cache miss");
+            $display("address 0x%h  write: %b: cache miss", address, write_enable);
 `endif
             if (write_enable) begin
 `ifdef DBG
@@ -363,25 +370,29 @@ module Cache #(
               // write
               if (line_dirty) begin
 `ifdef DBG
-                $display("line dirty, evict");
+                $display("line dirty, evict to RAM address 0x%h",
+                         burst_ram_dirty_cache_line_address);
 `endif
                 br_cmd <= 1;  // command write
-                br_addr <= burst_ram_dirty_cache_line_write_address;
+                br_addr <= burst_ram_dirty_cache_line_address;
                 br_cmd_en <= 1;
                 br_wr_data[31:0] <= data0_out;
                 br_wr_data[63:32] <= data1_out;
+`ifdef DBG
+                $display("write line (1): 0x%h%h", data0_out, data1_out);
+`endif
                 burst_writing <= 1;
                 state <= STATE_WRITE_1;
               end
-            end else begin
+            end else begin  // not (line_dirty)
 `ifdef DBG
-              $display("fetch line");
+              $display("read line from RAM address 0x%h", burst_ram_cache_line_address);
 `endif
               // read
               br_cmd <= 0;  // command read
               br_addr <= burst_ram_cache_line_address;
               br_cmd_en <= 1;
-              burst_fetching <= 1;
+              burst_reading <= 1;
               state <= STATE_FETCH_WAIT_FOR_DATA_READY;
             end
           end
@@ -396,7 +407,9 @@ module Cache #(
 
             burst_write_enable_1 <= 4'b1111;
             burst_data_in_1 <= br_rd_data[63:32];
-
+`ifdef DBG
+            $display("read line (1): 0x%h", br_rd_data);
+`endif
             state <= STATE_FETCH_READ_1;
           end
         end
@@ -411,7 +424,9 @@ module Cache #(
 
           burst_write_enable_3 <= 4'b1111;
           burst_data_in_3 <= br_rd_data[63:32];
-
+`ifdef DBG
+          $display("read line (2): 0x%h", br_rd_data);
+`endif
           state <= STATE_FETCH_READ_2;
         end
 
@@ -425,7 +440,9 @@ module Cache #(
 
           burst_write_enable_5 <= 4'b1111;
           burst_data_in_5 <= br_rd_data[63:32];
-
+`ifdef DBG
+          $display("read line (3): 0x%h", br_rd_data);
+`endif
           state <= STATE_FETCH_READ_3;
         end
 
@@ -442,7 +459,9 @@ module Cache #(
 
           // write the tag
           burst_write_enable_tag <= 4'b1111;
-
+`ifdef DBG
+          $display("read line (4): 0x%h", br_rd_data);
+`endif
           state <= STATE_FETCH_READ_FINISH;
         end
 
@@ -450,11 +469,14 @@ module Cache #(
           burst_write_enable_6 <= 0;
           burst_write_enable_7 <= 0;
           burst_write_enable_tag <= 0;
-          burst_fetching <= 0;
+          burst_reading <= 0;
           state <= STATE_IDLE;
         end
 
         STATE_WRITE_1: begin
+`ifdef DBG
+          $display("write line (2): 0x%h%h", data2_out, data3_out);
+`endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data2_out;
           br_wr_data[63:32] <= data3_out;
@@ -462,6 +484,9 @@ module Cache #(
         end
 
         STATE_WRITE_2: begin
+`ifdef DBG
+          $display("write line (3): 0x%h%h", data4_out, data5_out);
+`endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data4_out;
           br_wr_data[63:32] <= data5_out;
@@ -469,6 +494,9 @@ module Cache #(
         end
 
         STATE_WRITE_3: begin
+`ifdef DBG
+          $display("write line (4): 0x%h%h", data6_out, data7_out);
+`endif
           br_cmd_en <= 0;
           br_wr_data[31:0] <= data6_out;
           br_wr_data[63:32] <= data7_out;
@@ -477,14 +505,14 @@ module Cache #(
 
         STATE_WRITE_FINISH: begin
 `ifdef DBG
-          $display("fetch line after eviction");
+          $display("read line after eviction from RAM address 0x%h", burst_ram_cache_line_address);
 `endif
           // start reading the cache line
           br_cmd <= 0;  // command read
           br_addr <= burst_ram_cache_line_address;
           br_cmd_en <= 1;
           burst_writing <= 0;
-          burst_fetching <= 1;
+          burst_reading <= 1;
           state <= STATE_FETCH_WAIT_FOR_DATA_READY;
         end
 
